@@ -143,4 +143,33 @@ const login = async (req, res) => {
   );
 };
 
-module.exports = { signup, login };
+const getUser = async (req, res) => {
+  const id = req.headers.id;
+
+  if (!id) {
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ msg: "You must provide user id." });
+    return;
+  }
+
+  pool.execute(
+    `
+    SELECT *
+    FROM users
+    WHERE id = "${id}"`,
+    function (err, result) {
+      if (err) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: err });
+        return;
+      } else if (result.length === 0) {
+        res.status(StatusCodes.NOT_FOUND).json({ msg: `User not Found` });
+        return;
+      } else {
+        res.status(StatusCodes.OK).json({ result });
+      }
+    }
+  );
+};
+
+module.exports = { signup, login, getUser };
